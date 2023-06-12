@@ -1,12 +1,22 @@
 package felipemanzano.notepad;
 
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 /**
  *
  * @author Manzano
  */
-public class Notepad extends JFrame{
+public class Notepad extends JFrame implements ActionListener{
 
     //criação da barra de menu.
     JMenuBar barraMenu = new JMenuBar();
@@ -62,13 +72,93 @@ public class Notepad extends JFrame{
        
        ajuda.add(sobre);
 
-       //Configurando a função para rolar a área de texto.
+       //Configurando a função para rolar a área de texto e seu funcionamento.
        JScrollPane scroll = new JScrollPane(areaTexto);
        add(scroll);
+       scroll.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+       scroll.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+       //Configuração da área de texto
+       areaTexto.setFont(new Font(Font.SANS_SERIF,Font.PLAIN,20));
+       areaTexto.setLineWrap(true);
+       areaTexto.setWrapStyleWord(true);
+
+       novoArquivo.addActionListener(this);
+       abrirArquivo.addActionListener(this);
+       salvarArquivo.addActionListener(this);
+       sair.addActionListener(this);
+       cortar.addActionListener(this);
+       copiar.addActionListener(this);
+       colar.addActionListener(this);
+       selecionarTudo.addActionListener(this);
+       sobre.addActionListener(this);
+        
+       
+       
     }
     
     public static void main(String[] args) {
         new Notepad().setVisible(true);
     }
-}
-                                                                                                                                                                
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if(e.getActionCommand().equalsIgnoreCase("Novo")){
+            areaTexto.setText(null);
+        }else if(e.getActionCommand().equalsIgnoreCase("Abrir")){
+
+             JFileChooser fileChooser = new JFileChooser();
+            FileNameExtensionFilter filtroTexto = new FileNameExtensionFilter("Somente Arquivos de texto (.txt)", "txt");
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.addChoosableFileFilter(filtroTexto);
+
+            int acaoAbrir = fileChooser.showOpenDialog(null);
+            if(acaoAbrir != JFileChooser.APPROVE_OPTION){
+                return;
+            }else{
+                try{
+                BufferedReader reader = new BufferedReader(new FileReader(fileChooser.getSelectedFile()));
+                areaTexto.read(reader,null);
+                }catch(IOException ex){
+                    ex.printStackTrace();
+                }
+            }
+
+        }else if(e.getActionCommand().equalsIgnoreCase("Salvar")){
+            
+            JFileChooser fileChooser = new JFileChooser();
+            FileNameExtensionFilter filtroTexto = new FileNameExtensionFilter("Somente Arquivos de texto (.txt)", "txt");
+            fileChooser.setAcceptAllFileFilterUsed(false);
+            fileChooser.addChoosableFileFilter(filtroTexto);
+
+            int acaoSalvar = fileChooser.showSaveDialog(null);
+            if(acaoSalvar != JFileChooser.APPROVE_OPTION){
+                return;
+            }else{
+                String nomeArquivo = fileChooser.getSelectedFile().getAbsolutePath().toString();
+                if(!nomeArquivo.contains(".txt"))
+                    nomeArquivo = nomeArquivo + ".txt";
+
+                try{
+                BufferedWriter writer = new BufferedWriter(new FileWriter(nomeArquivo));
+                areaTexto.write(writer);
+                }catch(IOException ex){
+                    ex.printStackTrace();
+                }
+            }
+
+        }else if(e.getActionCommand().equalsIgnoreCase("Sair")){
+            System.exit(0);
+        }else if(e.getActionCommand().equalsIgnoreCase("Cortar")){
+            areaTexto.cut();
+        }else if(e.getActionCommand().equalsIgnoreCase("Copiar")){
+            areaTexto.copy();
+        }else if(e.getActionCommand().equalsIgnoreCase("Colar")){
+            areaTexto.paste();
+        }else if(e.getActionCommand().equalsIgnoreCase("Selecionar Tudo")){
+            areaTexto.selectAll();
+        }else if(e.getActionCommand().equalsIgnoreCase("Sobre")){
+            new Sobre().setVisible(true);
+        }
+    }
+}                                                                                                                                                        
